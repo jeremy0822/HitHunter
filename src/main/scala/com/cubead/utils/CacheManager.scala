@@ -17,28 +17,21 @@ object CacheManager {
 
   var CacheMap = Map[String, String]()
 
-  //  import scalacache._
-  //
-  //  import ehcache._
-  //
-  //  val cacheManager: net.sf.ehcache.CacheManager = net.sf.ehcache.CacheManager.newInstance()
-  //  val underlying: net.sf.ehcache.Cache = cacheManager.getCache("myCache")
-  //  implicit val scalaCache = ScalaCache(EhcacheCache(underlying))
+//  import scalacache._
+//
+//  import ehcache._
+//
+//  val cacheManager: net.sf.ehcache.CacheManager = net.sf.ehcache.CacheManager.newInstance()
+//  val underlying: net.sf.ehcache.Cache = cacheManager.getCache("myCache")
+//  implicit val scalaCache = ScalaCache(EhcacheCache(underlying))
 
-  //  val underlyingGuavaCache = CacheBuilder.newBuilder().maximumSize(10000L).build[String, Object]
-  //  implicit val scalaCache = ScalaCache(EhcacheCache(underlyingGuavaCache))
+//  val underlyingGuavaCache = CacheBuilder.newBuilder().maximumSize(10000L).build[String, Object]
+//  implicit val scalaCache = ScalaCache(EhcacheCache(underlyingGuavaCache))
 
-  def getConf(tenantId: String): Option[Conf] = {
+  def getConf(tenantId: String): Conf = {
     val c = CacheMap.get(tenantId)
-    c match {
-      case Some(content) => {
-    	  val m = content.split(",").toList.map(_.toInt)
-    		Some(Conf(tenantId, m))
-      }
-      case None => {
-    	  None
-      }
-    }
+    val m = c.get.split(",").toList.map(_.toInt)
+    Conf(tenantId, m)
   }
 
 //  def getConf(tenantId: String): Conf = memoize {
@@ -64,7 +57,8 @@ object CacheManager {
   def setConf(conf: List[Conf]): Unit ={
     conf.foreach{ c =>
       CacheMap += (c.tid -> c.rule.mkString(","))
-      println(s"${c.tid}:${CacheMap.get(c.tid)}")
+      println(CacheMap.get(c.tid))
+//      put(c.tid)(c.rule.mkString(","))
     }
   }
 }

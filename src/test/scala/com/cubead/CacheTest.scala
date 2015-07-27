@@ -9,9 +9,9 @@ import com.cubead.utils.{CacheManager, CacheBuilderHelper}
 object CacheTest extends  App{
   Constants.CACHE_SOURCE_URL = ""
   CacheBuilderHelper.buildCache()
-  val tenantId = "6913"
+  val tenantId = ""
   CacheBuilderHelper.buildCacheById(tenantId)
   val conf = CacheManager.getConf(tenantId)
-  println(conf.get.rule)
+  println(conf.rule)
 
 }

@@ -16,43 +16,49 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object Application extends App{
   implicit val system = akka.actor.ActorSystem("cubead-hithunter")
-  
   Constants.CACHE_SOURCE_URL = system.settings.config.getString("app.hit-conf-url")
   val cleanerInterval = system.settings.config.getInt("app.clean-duration")
-  val appHost = system.settings.config.getString("app.host")
-  val appPort = system.settings.config.getInt("app.port")
-  
+
+  val host = system.settings.config.getString("redis.host")
+  val port = system.settings.config.getInt("redis.port")
+//  val redisServe = RedisServer(host = host, port = port)
+//  val redis = RedisClientPool(redisServe, "redis-server-pool")
+  val redis = RedisClient(host = host, port = port)
+
+  val service = system.actorOf(Props[HttpServiceActor], "spray-http-service")
+  IO(Http) ! Http.Bind(service, system.settings.config.getString("app.host"), system.settings.config.getInt("app.port"))
+
+//  val worker = system.actorOf(Props(classOf[WorkerActor], redis), "worker-actor")
+
+//  val updateCache = system.settings.config.getInt("app.update-cache-interval")
+  val cacheActor = system.actorOf(Props[CacheActor], "cache-actor")
+  cacheActor ! Constants.CACHE_UPDATE_ALL
+
+//  system.scheduler.schedule(Duration.create(10, TimeUnit.MILLISECONDS), Duration.create(updateCache, TimeUnit.SECONDS), cacheActor, Constants.CACHE_UPDATE_ALL)
+
+  // sleep 30s to wait get all cache data
+//  Thread.sleep(30000)
+  val conf = new Conf("119378", List(2,2,10,5,100,10))
+  CacheManager.setConf(List(conf))
+
+  // clean log data
+  val cleanActor = system.actorOf(Props(classOf[CleanerActor], redis), "cleaner-actor")
+  system.scheduler.schedule(Duration.create(0, TimeUnit.MILLISECONDS), Duration.create(cleanerInterval, TimeUnit.SECONDS), cleanActor, Constants.CLEANER_MESSAGE)
+
+  // read data from kafka
+  //val (zookepers, brockers, bport, groupId, topic) = (, ,  , , ) //("192.168.3.102:2181", "192.168.3.102:9092", "grtca")
   Constants.kAFKA_HOST = system.settings.config.getString("kafka.connection")
   Constants.kAFKA_PORT = system.settings.config.getInt("kafka.port")
   Constants.kAFKA_ZOOKEEPER = system.settings.config.getString("kafka.zookeeper")
   Constants.kAFKA_GROUPID = system.settings.config.getString("kafka.groupId")
   Constants.kAFKA_TOPIC = system.settings.config.getString("kafka.topic")
-  
-  val redisHost = system.settings.config.getString("redis.host")
-  val redisPort = system.settings.config.getInt("redis.port")
-  val redis = RedisClient(host = redisHost, port = redisPort)
 
-  val service = system.actorOf(Props[HttpServiceActor], "spray-http-service")
-  IO(Http) ! Http.Bind(service, appHost, appPort)
-
-  val cacheActor = system.actorOf(Props[CacheActor], "cache-actor")
-  cacheActor ! Constants.CACHE_UPDATE_ALL
-
-//the value in list are couples of k-v (ms,times),for test
-//  val rule = system.settings.config.getString("app.rule")
-//  val tenantId = system.settings.config.getString("app.tenantId")
-//  val rules = rule.split(",").toList.map { _.toInt}
-//  val conf = new Conf(tenantId, rules)
-//  CacheManager.setConf(List(conf))
-
-  // clean log data
-  val cleanActor = system.actorOf(Props(classOf[CleanerActor], redis), "cleaner-actor")
-  system.scheduler.schedule(Duration.create(0, TimeUnit.MILLISECONDS), Duration.create(cleanerInterval, TimeUnit.SECONDS), cleanActor, Constants.CLEANER_MESSAGE_TYPE)
-
-  // read data from kafka last offset
-  //-3000for test
-  Constants.kAFKA_OFFSET = KafkaUtil.getLastOffset()
+  val consumer = new SimpleConsumer(Constants.kAFKA_HOST, Constants.kAFKA_PORT,100000,64*1024, Constants.KAFKA_CLIENT_ID)
+//  val offset = KafkaUtil.getLastOffset(Constants.kAFKA_HOST, Constants.kAFKA_PORT,100000,64*1024, Constants.kAFKA_TOPIC, 0, System.currentTimeMillis(),Constants.KAFKA_CLIENT_ID) - 2
+//  val offset = KafkaUtil.getLastOffset()
+  Constants.kAFKA_OFFSET = KafkaUtil.getLastOffset() - 300
   val kafkaActor = system.actorOf(Props(classOf[CAKafkaConsumer], Constants.kAFKA_TOPIC), "kafka-consumer")
+
   val kafkaReadInterval = system.settings.config.getInt("app.kafka-read-interval")
   system.scheduler.schedule(Duration.create(0, TimeUnit.MILLISECONDS), Duration.create(kafkaReadInterval, TimeUnit.SECONDS), kafkaActor, Constants.kAFKA_START_CMD)
 }

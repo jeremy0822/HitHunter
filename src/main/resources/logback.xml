@@ -16,9 +16,9 @@
         </encoder>
     </appender>
 
-    <logger name="com.cubead" level="INFO" />
+    <logger name="com.cubead" level="DEBUG" />
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
     </root>

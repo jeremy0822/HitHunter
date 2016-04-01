@@ -1,9 +1,9 @@
 # 恶意ip实时阻击项目
 
-＊开发环境
+＊ 开发环境
 实时恶意点击监测方法，采用Scala（2.11.6）编写，采用Akka框架，依赖于spray，redis，kafka，async-http-client，json4s等包，整体比较简单，代码行数不多。
 
-＊程序设计思路：
+＊ 程序设计思路：
 1.从kafka读取实时数据（读取间隔可在application.conf中配置）；
 2.然后格式化算法需要的数据；
 3.继而从进入核心的计算逻辑（主要依赖redis，如果后续达到瓶颈可以增加redis或抽出来自己来写）；
@@ -13,7 +13,7 @@
 2.程序启动时会有一个监听9000端口的程序来读取配置数据的变更；
 3.有个后台actor定期清理过期数据（暂定两小时）；
 
-＊配置文件说明：
+＊ 配置文件说明：
 app {
   name = "hithunter"  程序名
   hit-conf-url = "http://192.168.3.184:8181/ncs/guardforbidips/getHcRule.do" 读取配置项的地址
@@ -40,7 +40,7 @@ redis {
   port = 6379                redis端口
 }
 
-＊程序文件说明：
+＊ 程序文件说明：
 Application.scala 为程序入口
 actors包中是所有的主要actor：
 1.有cache建立维护；

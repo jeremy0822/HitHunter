@@ -23,11 +23,11 @@ app {
   kafka-read-interval = 5     kafka读取间隔
   host = "172.16.1.201"          服务绑定地址
   port = 9000                 服务绑定端口
-}
+}  
 
 akka {
   loglevel = INFO             log级别
-}
+}  
 
 kafka {
   connection = "192.168.3.227"     kafka地址
@@ -35,12 +35,12 @@ kafka {
   zookeeper = "192.168.3.226:2181" zookeeper地址
   groupId = "grtca"                kafka groupid
   topic = "topic-rtca"             kafka的topic
-}
+}  
 
 redis {
   host = "192.168.3.87"     redis地址
   port = 6379                redis端口
-}
+}  
 
 # 程序文件说明  
 Application.scala 为程序入口

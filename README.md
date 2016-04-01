@@ -16,6 +16,7 @@
 * 有个后台actor定期清理过期数据（暂定两小时）；
 
 # 配置文件说明  
+```
 app {
   name = "hithunter"  程序名
   hit-conf-url = "http://192.168.3.184:8181/ncs/guardforbidips/getHcRule.do" 读取配置项的地址
@@ -41,7 +42,7 @@ redis {
   host = "192.168.3.87"     redis地址
   port = 6379                redis端口
 }  
-
+```
 # 程序文件说明  
 Application.scala 为程序入口
 actors包中是所有的主要actor：
